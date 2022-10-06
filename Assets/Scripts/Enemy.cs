@@ -4,23 +4,93 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    public GameObject player;
+    public GameObject eBullet;
+    public GameObject ItemCoin;
+    public GameObject ItemPower;
+    public GameObject ItemBoom;
+
+    public int enemyScore;
+    public string enemyName;
+    public float fireTime;
+    float curTime;
+
     public float speed;
     public int health;
 
     Rigidbody rigid;
 
-    void Awake()
+    void Update()
     {
-        rigid = GetComponent<Rigidbody>();
-        rigid.velocity = Vector3.down * speed;
+        Fire();
+        Reload();
     }
 
-    void OnHit(int dmg)
+    void Fire()
     {
+        if(curTime < fireTime) { return; }
+
+        if(enemyName == "S")
+        {
+            GameObject bullet = Instantiate(eBullet);
+            bullet.transform.position = transform.position;
+            rigid = bullet.GetComponent<Rigidbody>();
+
+            Vector3 dir = player.transform.position - transform.position;
+            rigid.AddForce(dir.normalized * 5, ForceMode.Impulse);
+        }
+        else if(enemyName == "M")
+        {
+            GameObject bullet1 = Instantiate(eBullet, transform.position + Vector3.right * 0.3f, transform.rotation);
+            GameObject bullet2 = Instantiate(eBullet, transform.position + Vector3.left * 0.3f, transform.rotation);
+            Rigidbody rigid1 = bullet1.GetComponent<Rigidbody>();
+            Rigidbody rigid2 = bullet2.GetComponent<Rigidbody>();
+
+            Vector3 dir1 = player.transform.position - (transform.position + Vector3.right * 0.3f);
+            Vector3 dir2 = player.transform.position - (transform.position + Vector3.left * 0.3f);
+            rigid1.AddForce(dir1.normalized * 4, ForceMode.Impulse);
+            rigid2.AddForce(dir2.normalized * 4, ForceMode.Impulse);
+        }
+        curTime = 0;
+    }
+
+    void Reload()
+    {
+        curTime += Time.deltaTime;
+    }
+
+    public void OnHit(int dmg)
+    {
+        if(health <= 0) { return; }
+        
         health -= dmg;
 
         if(health <= 0)
         {
+            Player playerLogic = player.GetComponent<Player>();
+            playerLogic.score += enemyScore;
+
+            int ran = Random.Range(0, 10);
+            if(ran < 3)
+            {
+                Debug.Log("Not Item");
+            }
+            else if(ran < 5)
+            {
+                GameObject item = Instantiate(ItemCoin);
+                item.transform.position = transform.position;
+            }
+            else if(ran < 8)
+            {
+                GameObject item = Instantiate(ItemPower);
+                item.transform.position = transform.position;
+            }
+            else if(ran < 10)
+            {
+                GameObject item = Instantiate(ItemBoom);
+                item.transform.position = transform.position;
+            }
+
             Destroy(gameObject);
         }
     }

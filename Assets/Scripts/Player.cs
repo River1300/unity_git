@@ -10,9 +10,18 @@ public class Player : MonoBehaviour
     bool isTouchRight;
 
     public GameObject pBullet;
+    public GameObject boombEffect;
+    public GameManager gameManager;
     Rigidbody rigid;
 
+    public bool isHit;
+    public bool isBoombTime;
+    public int life;
+    public int score;
     public int power;
+    public int maxPower;
+    public int boomb;
+    public int maxBoomb;
     public float speed;
     public float fireTime;
     float curTime = 0;
@@ -30,6 +39,7 @@ public class Player : MonoBehaviour
         Move();
         Fire();
         Reload();
+        Boomb();
     }
 
     void Move()
@@ -118,6 +128,92 @@ public class Player : MonoBehaviour
                 break;
             }
         }
+        else if(other.gameObject.tag == "eBullet")
+        {
+            if(isHit) { return; }
+            isHit = true;
+
+            life--;
+            gameManager.CoutLife(life);
+
+            if(life <= 0)
+            {
+                gameManager.GameOverSet();
+            }
+            else
+            {
+                gameManager.RespawnCall();
+            }
+            gameObject.SetActive(false);
+            Destroy(other.gameObject);
+        }
+        else if(other.gameObject.tag == "Item")
+        {
+            Item item = other.gameObject.GetComponent<Item>();
+            
+            switch(item.name)
+            {
+                case "C":
+                    score += 1000;
+                    break;
+
+                case "P":
+                    if(power == maxPower)
+                    {
+                        score += 500;
+                    }
+                    else
+                    {
+                        power++;
+                    }
+                    break;
+
+                case "B":
+                    if(boomb == maxBoomb)
+                    {
+                        score += 500;
+                    }
+                    else
+                    {
+                        boomb++;
+                        gameManager.CountBoom(boomb);
+                    }
+                    break;
+            }
+            Destroy(other.gameObject);
+        }
+    }
+
+    void Boomb()
+    {
+        if(!Input.GetButton("Fire2")) { return; }
+        if(isBoombTime) { return; }
+        if(boomb == 0) { return; }
+
+        boomb--;
+        gameManager.CountBoom(boomb);
+        isBoombTime = true;
+
+        boombEffect.SetActive(true);
+        Invoke("OffBoombEffect", 2.5f);
+
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        for(int i = 0; i < enemies.Length; i++)
+        {
+            Enemy enemyLogic = enemies[i].GetComponent<Enemy>();
+            enemyLogic.OnHit(1000);
+        }
+        GameObject[] bullets = GameObject.FindGameObjectsWithTag("eBullet");
+        for(int i = 0; i < bullets.Length; i++)
+        {
+            Destroy(bullets[i]);
+        }
+    }
+
+    void OffBoombEffect()
+    {
+        boombEffect.SetActive(false);
+        isBoombTime = false;
     }
 
     void OnTriggerExit(Collider other)

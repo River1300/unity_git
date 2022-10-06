@@ -128,5 +128,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd606d67f7475624d8f5a8c33411831b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 3
+  player: {fileID: 0}
+  eBullet: {fileID: 0}
+  ItemCoin: {fileID: 401286023127181018, guid: b7a8aae581fb89c418285c982b3831d8, type: 3}
+  ItemPower: {fileID: 2614547803986861146, guid: b3294ef1ef00d4340ad3a8a81d20660b, type: 3}
+  ItemBoom: {fileID: 2877917147608464551, guid: 818f5a4a2a80ec34a9a0b37a2c758a13, type: 3}
+  enemyScore: 55
+  enemyName: L
+  fireTime: 0
+  speed: 1
   health: 15
