@@ -12,11 +12,13 @@ public class Player : MonoBehaviour
     public GameObject pBullet;
     public GameObject boombEffect;
     public GameManager gameManager;
+    public ObjectManager objectManager;
     Rigidbody rigid;
 
     public bool isHit;
     public bool isBoombTime;
     public int life;
+    public int bestScore;
     public int score;
     public int power;
     public int maxPower;
@@ -34,12 +36,18 @@ public class Player : MonoBehaviour
         anim = GetComponent<Animator>();
     }
 
+    void Start()
+    {
+        bestScore = PlayerPrefs.GetInt("Best Score", 0);
+    }
+
     void Update()
     {
         Move();
         Fire();
         Reload();
         Boomb();
+        BestScore();
     }
 
     void Move()
@@ -68,7 +76,7 @@ public class Player : MonoBehaviour
         switch(power)
         {
             case 1:
-                GameObject bullet1 = Instantiate(pBullet);
+                GameObject bullet1 = objectManager.MakeObj("pBullet");
                 bullet1.transform.position = transform.position;
                 rigid = bullet1.GetComponent<Rigidbody>();
                 rigid.AddForce(Vector3.up * 10, ForceMode.Impulse);
@@ -77,7 +85,7 @@ public class Player : MonoBehaviour
                 int shot = 5;
                 for(int i = 0; i < shot; i++)
                 {
-                    GameObject bullet2 = Instantiate(pBullet);
+                    GameObject bullet2 = objectManager.MakeObj("pBullet");
                     bullet2.transform.position = 
                         (transform.position + Vector3.left * 0.6f) + Vector3.right * (i * 0.3f);
                     rigid = bullet2.GetComponent<Rigidbody>();
@@ -85,10 +93,10 @@ public class Player : MonoBehaviour
                 }
                 break;
             case 3:
-                int round = 50;
+                int round = 25;
                 for(int i = 0; i < round; i++)
                 {
-                    GameObject bullet3 = Instantiate(pBullet);
+                    GameObject bullet3 = objectManager.MakeObj("pBullet");
                     bullet3.transform.position = transform.position;
                     bullet3.transform.rotation = Quaternion.identity;
                     rigid = bullet3.GetComponent<Rigidbody>();
@@ -145,7 +153,7 @@ public class Player : MonoBehaviour
                 gameManager.RespawnCall();
             }
             gameObject.SetActive(false);
-            Destroy(other.gameObject);
+            other.gameObject.SetActive(false);
         }
         else if(other.gameObject.tag == "Item")
         {
@@ -180,7 +188,16 @@ public class Player : MonoBehaviour
                     }
                     break;
             }
-            Destroy(other.gameObject);
+            other.gameObject.SetActive(false);
+        }
+    }
+
+    void BestScore()
+    {
+        if(bestScore < score) 
+        {
+            bestScore = score;
+            PlayerPrefs.SetInt("Best Score", bestScore);
         }
     }
 
@@ -197,16 +214,39 @@ public class Player : MonoBehaviour
         boombEffect.SetActive(true);
         Invoke("OffBoombEffect", 2.5f);
 
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        for(int i = 0; i < enemies.Length; i++)
+        GameObject[] enemiesL = objectManager.GetPool("EnemyL");
+        GameObject[] enemiesM = objectManager.GetPool("EnemyM");
+        GameObject[] enemiesS = objectManager.GetPool("EnemyS");
+
+        for(int i = 0; i < enemiesL.Length; i++)
         {
-            Enemy enemyLogic = enemies[i].GetComponent<Enemy>();
-            enemyLogic.OnHit(1000);
+            if(enemiesL[i].activeSelf){
+                Enemy enemyLogic = enemiesL[i].GetComponent<Enemy>();
+                enemyLogic.OnHit(1000);
+            }
         }
-        GameObject[] bullets = GameObject.FindGameObjectsWithTag("eBullet");
+        for(int i = 0; i < enemiesM.Length; i++)
+        {
+            if(enemiesM[i].activeSelf){
+                Enemy enemyLogic = enemiesM[i].GetComponent<Enemy>();
+                enemyLogic.OnHit(1000);
+            }
+        }
+        for(int i = 0; i < enemiesS.Length; i++)
+        {
+            if(enemiesS[i].activeSelf){
+                Enemy enemyLogic = enemiesS[i].GetComponent<Enemy>();
+                enemyLogic.OnHit(1000);
+            }
+        }
+
+        GameObject[] bullets = objectManager.GetPool("eBullet");
         for(int i = 0; i < bullets.Length; i++)
         {
-            Destroy(bullets[i]);
+            if(bullets[i].activeSelf)
+            {
+                bullets[i].SetActive(false);
+            }
         }
     }
 

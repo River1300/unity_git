@@ -4,11 +4,17 @@ using UnityEngine;
 
 public class EnemyBullet : MonoBehaviour
 {
+    void OnEnable()
+    {
+        GetComponent<Rigidbody>().velocity = Vector3.zero;
+        GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+    }
+
     void OnTriggerEnter(Collider other)
     {
         if(other.gameObject.tag == "BoarderW")
         {
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
     }
 }

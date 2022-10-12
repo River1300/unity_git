@@ -10,6 +10,8 @@ public class Enemy : MonoBehaviour
     public GameObject ItemPower;
     public GameObject ItemBoom;
 
+    public ObjectManager objectManager;
+
     public int enemyScore;
     public string enemyName;
     public float fireTime;
@@ -19,6 +21,22 @@ public class Enemy : MonoBehaviour
     public int health;
 
     Rigidbody rigid;
+
+    void OnEnable()
+    {
+        switch(enemyName)
+        {
+            case "L":
+                health = 40;
+                break;
+            case "M":
+                health = 10;
+                break;
+            case "S":
+                health = 3;
+                break;
+        }
+    }
 
     void Update()
     {
@@ -32,7 +50,7 @@ public class Enemy : MonoBehaviour
 
         if(enemyName == "S")
         {
-            GameObject bullet = Instantiate(eBullet);
+            GameObject bullet = objectManager.MakeObj("eBullet");
             bullet.transform.position = transform.position;
             rigid = bullet.GetComponent<Rigidbody>();
 
@@ -41,8 +59,11 @@ public class Enemy : MonoBehaviour
         }
         else if(enemyName == "M")
         {
-            GameObject bullet1 = Instantiate(eBullet, transform.position + Vector3.right * 0.3f, transform.rotation);
-            GameObject bullet2 = Instantiate(eBullet, transform.position + Vector3.left * 0.3f, transform.rotation);
+            GameObject bullet1 = objectManager.MakeObj("eBullet");
+            bullet1.transform.position = transform.position + Vector3.right * 0.3f;
+            GameObject bullet2 = objectManager.MakeObj("eBullet");
+            bullet2.transform.position = transform.position + Vector3.left * 0.3f;
+
             Rigidbody rigid1 = bullet1.GetComponent<Rigidbody>();
             Rigidbody rigid2 = bullet2.GetComponent<Rigidbody>();
 
@@ -91,7 +112,8 @@ public class Enemy : MonoBehaviour
                 item.transform.position = transform.position;
             }
 
-            Destroy(gameObject);
+            gameObject.SetActive(false);
+            transform.rotation = Quaternion.identity;
         }
     }
 
@@ -99,14 +121,16 @@ public class Enemy : MonoBehaviour
     {
         if(other.gameObject.tag == "BoarderW")
         {
-            Destroy(gameObject);
+            gameObject.SetActive(false);
+            transform.rotation = Quaternion.identity;
         }
         else if(other.gameObject.tag == "pBullet")
         {
             PlayerBullet bullet = other.gameObject.GetComponent<PlayerBullet>();
             OnHit(bullet.damage);
 
-            Destroy(other.gameObject);
+            other.gameObject.SetActive(false);
+            other.gameObject.transform.rotation = Quaternion.identity;
         }
     }
 }
