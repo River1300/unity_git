@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ObjectManager : MonoBehaviour
 {
+    public GameObject enemyBPrefab;
     public GameObject enemyLPrefab;
     public GameObject enemyMPrefab;
     public GameObject enemySPrefab;
@@ -11,11 +12,13 @@ public class ObjectManager : MonoBehaviour
     public GameObject pBulletPrefab;
     public GameObject eBulletPrefab;
     public GameObject fBulletPrefab;
+    public GameObject bBulletPrefab;
 
     public GameObject itemCoinPrefab;
     public GameObject itemPowerPrefab;
     public GameObject itemBoomPrefab;
 
+    GameObject[] enemyB;
     GameObject[] enemyL;
     GameObject[] enemyM;
     GameObject[] enemyS;
@@ -23,6 +26,7 @@ public class ObjectManager : MonoBehaviour
     GameObject[] pBullet;
     GameObject[] eBullet;
     GameObject[] fBullet;
+    GameObject[] bBullet;
 
     GameObject[] itemCoin;
     GameObject[] itemPower;
@@ -32,6 +36,7 @@ public class ObjectManager : MonoBehaviour
 
     void Awake()
     {
+        enemyB = new GameObject[1];
         enemyL = new GameObject[10];
         enemyM = new GameObject[10];
         enemyS = new GameObject[20];
@@ -39,6 +44,7 @@ public class ObjectManager : MonoBehaviour
         pBullet = new GameObject[300];
         eBullet = new GameObject[200];
         fBullet = new GameObject[100];
+        bBullet = new GameObject[300];
 
         itemCoin = new GameObject[10];
         itemPower = new GameObject[10];
@@ -49,6 +55,11 @@ public class ObjectManager : MonoBehaviour
 
     void Generate()
     {   // #. enemy
+        for(int i = 0; i < enemyB.Length; i++)
+        {
+            enemyB[i] = Instantiate(enemyBPrefab);
+            enemyB[i].SetActive(false);
+        }
         for(int i = 0; i < enemyL.Length; i++)
         {
             enemyL[i] = Instantiate(enemyLPrefab);
@@ -81,6 +92,11 @@ public class ObjectManager : MonoBehaviour
             fBullet[i] = Instantiate(fBulletPrefab);
             fBullet[i].SetActive(false);
         }
+        for(int i = 0; i < bBullet.Length; i++)
+        {
+            bBullet[i] = Instantiate(bBulletPrefab);
+            bBullet[i].SetActive(false);
+        }
 
         // #. item
         for(int i = 0; i < itemCoin.Length; i++)
@@ -104,6 +120,10 @@ public class ObjectManager : MonoBehaviour
     {
         switch(type)
         {
+            case "EnemyB":
+                target = enemyB;
+                break;
+
             case "EnemyL":
                 target = enemyL;
                 break;
@@ -126,6 +146,10 @@ public class ObjectManager : MonoBehaviour
 
             case "fBullet":
                 target = fBullet;
+                break;
+
+            case "bBullet":
+                target = bBullet;
                 break;
 
             case "ItemCoin":
@@ -155,6 +179,10 @@ public class ObjectManager : MonoBehaviour
     {
         switch(name)
         {
+            case "EnemyB":
+                target = enemyB;
+                break;
+
             case "EnemyL":
                 target = enemyL;
                 break;
@@ -179,6 +207,10 @@ public class ObjectManager : MonoBehaviour
                 target = fBullet;
                 break;
 
+            case "bBullet":
+                target = bBullet;
+                break;
+
             case "ItemCoin":
                 target = itemCoin;
                 break;
@@ -194,4 +226,13 @@ public class ObjectManager : MonoBehaviour
         return target;
     }
 
+    public void DeleteAll(string type)
+    {
+        if(type == "BOSS"){
+            for(int i = 0; i < bBullet.Length; i++)
+            {
+                bBullet[i].SetActive(false);
+            }
+        }
+    }
 }

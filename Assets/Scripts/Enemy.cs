@@ -20,12 +20,20 @@ public class Enemy : MonoBehaviour
     public float speed;
     public int health;
 
+    public int patternIndex;
+    public int curPatternCount;
+    public int[] maxPatternCount;
+
     Rigidbody rigid;
 
     void OnEnable()
     {
         switch(enemyName)
         {
+            case "B":
+                health = 500;
+                Invoke("Stop", 3);
+                break;
             case "L":
                 health = 40;
                 break;
@@ -38,8 +46,152 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    void Stop()
+    {
+        if(!gameObject.activeSelf) { return; }
+        rigid = GetComponent<Rigidbody>();
+        rigid.velocity = Vector3.zero;
+
+        Invoke("Think", 2);
+    }
+
+    void Think()
+    {
+        //CancelInvoke();
+        patternIndex = patternIndex == 3 ? 0 : patternIndex + 1;
+        curPatternCount = 0;
+
+        switch(patternIndex)
+        {
+            case 0:
+                FireForward();
+                break;
+            case 1:
+                FireShot();
+                break;
+            case 2:
+                FireArc();
+                break;
+            case 3:
+                FireAround();
+                break;
+        }
+    }
+
+    void FireForward()
+    {
+        if(health <= 0) { return; }
+
+        GameObject bulletR = objectManager.MakeObj("bBullet");
+        bulletR.transform.position = transform.position + Vector3.right * 0.3f;
+        GameObject bulletRR = objectManager.MakeObj("bBullet");
+        bulletRR.transform.position = transform.position + Vector3.right * 0.65f;
+        GameObject bulletL = objectManager.MakeObj("bBullet");
+        bulletL.transform.position = transform.position + Vector3.left * 0.3f;
+        GameObject bulletLL = objectManager.MakeObj("bBullet");
+        bulletLL.transform.position = transform.position + Vector3.left * 0.65f;
+
+        Rigidbody rigid1 = bulletR.GetComponent<Rigidbody>();
+        Rigidbody rigid2 = bulletRR.GetComponent<Rigidbody>();
+        Rigidbody rigid3 = bulletL.GetComponent<Rigidbody>();
+        Rigidbody rigid4 = bulletLL.GetComponent<Rigidbody>();
+
+        rigid1.AddForce(Vector2.down * 6, ForceMode.Impulse);
+        rigid2.AddForce(Vector2.down * 6, ForceMode.Impulse);
+        rigid3.AddForce(Vector2.down * 6, ForceMode.Impulse);
+        rigid4.AddForce(Vector2.down * 6, ForceMode.Impulse);
+
+        curPatternCount++;
+        if(curPatternCount < maxPatternCount[patternIndex]) 
+        {
+            Invoke("FireForward", 1);
+        }
+        else 
+        { 
+            Invoke("Think", 3);
+        }
+    }
+    void FireShot()
+    {
+        if(health <= 0) { return; }
+
+        for(int i = 0; i < 5; i++){
+            GameObject bulletS = objectManager.MakeObj("bBullet");
+            bulletS.transform.position = transform.position;
+            rigid = bulletS.GetComponent<Rigidbody>();
+
+            Vector3 dir = player.transform.position - transform.position;
+            Vector3 ranDir = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(0f, 2f), 0);
+            dir += ranDir;
+            rigid.AddForce(dir.normalized * 5, ForceMode.Impulse);
+        }
+
+        curPatternCount++;
+        if(curPatternCount < maxPatternCount[patternIndex]) 
+        { 
+            Invoke("FireShot", 1.55f);
+        }
+        else 
+        { 
+            Invoke("Think", 3);
+        }
+    }
+    void FireArc()
+    {
+        if(health <= 0) { return; }
+
+        GameObject bulletF = objectManager.MakeObj("bBullet");
+        bulletF.transform.position = transform.position;
+        bulletF.transform.rotation = Quaternion.identity;
+        rigid = bulletF.GetComponent<Rigidbody>();
+
+        Vector3 dirF = new Vector3(Mathf.Cos
+                        (Mathf.PI * 10 * curPatternCount / maxPatternCount[patternIndex]), -1, 0);
+        rigid.AddForce(dirF.normalized * 5, ForceMode.Impulse);
+
+        curPatternCount++;
+        if(curPatternCount < maxPatternCount[patternIndex]) 
+        { 
+            Invoke("FireArc", 0.15f);
+        }
+        else 
+        { 
+            Invoke("Think", 3);
+        }
+    }
+    void FireAround()
+    {
+        if(health <= 0) { return; }
+
+        int roundB = 50;
+        int roundBB = 40;
+        int roundNum = curPatternCount % 2 == 0 ? roundB : roundBB;
+
+        for(int i = 0; i < roundNum; i++){
+            GameObject bulletO = objectManager.MakeObj("bBullet");
+            bulletO.transform.position = transform.position;
+            bulletO.transform.rotation = Quaternion.identity;
+            rigid = bulletO.GetComponent<Rigidbody>();
+
+            Vector3 dirO = new Vector3(Mathf.Sin(Mathf.PI * 2 * i / roundNum), 
+                                        Mathf.Cos(Mathf.PI * 2 * i / roundNum), 0);
+            rigid.AddForce(dirO.normalized * 3, ForceMode.Impulse);
+        }
+
+        curPatternCount++;
+        if(curPatternCount < maxPatternCount[patternIndex]) 
+        { 
+            Invoke("FireAround", 2f);
+        }
+        else 
+        {
+            Invoke("Think", 3);
+        }
+    }
+
     void Update()
     {
+        if(enemyName == "B") { return; }
         Fire();
         Reload();
     }
@@ -91,7 +243,7 @@ public class Enemy : MonoBehaviour
             Player playerLogic = player.GetComponent<Player>();
             playerLogic.score += enemyScore;
 
-            int ran = Random.Range(0, 10);
+            int ran = enemyName == "B" ? 0 : Random.Range(0, 10);
             if(ran < 3)
             {
                 Debug.Log("Not Item");
@@ -112,6 +264,8 @@ public class Enemy : MonoBehaviour
                 item.transform.position = transform.position;
             }
 
+            if(enemyName == "B") { objectManager.DeleteAll("BOSS"); }
+            CancelInvoke();
             gameObject.SetActive(false);
             transform.rotation = Quaternion.identity;
         }
@@ -119,7 +273,7 @@ public class Enemy : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.tag == "BoarderW")
+        if(other.gameObject.tag == "BoarderW" && enemyName != "B")
         {
             gameObject.SetActive(false);
             transform.rotation = Quaternion.identity;

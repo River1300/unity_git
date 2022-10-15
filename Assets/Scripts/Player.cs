@@ -11,6 +11,7 @@ public class Player : MonoBehaviour
 
     public GameObject pBullet;
     public GameObject boombEffect;
+    public GameObject[] follower;
     public GameManager gameManager;
     public ObjectManager objectManager;
     Rigidbody rigid;
@@ -93,6 +94,9 @@ public class Player : MonoBehaviour
                 }
                 break;
             case 3:
+            case 4:
+            case 5:
+            case 6:
                 int round = 25;
                 for(int i = 0; i < round; i++)
                 {
@@ -173,6 +177,7 @@ public class Player : MonoBehaviour
                     else
                     {
                         power++;
+                        AddFollower();
                     }
                     break;
 
@@ -189,6 +194,17 @@ public class Player : MonoBehaviour
                     break;
             }
             other.gameObject.SetActive(false);
+        }
+    }
+
+    void AddFollower()
+    {
+        if(power == 4){
+            follower[0].SetActive(true);
+        }else if(power == 5){
+            follower[1].SetActive(true);
+        }else if(power == 6){
+            follower[2].SetActive(true);
         }
     }
 
